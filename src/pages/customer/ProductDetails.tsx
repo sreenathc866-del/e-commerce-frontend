@@ -218,8 +218,7 @@ export default function ProductDetails() {
                   stock: product.stock,
                   variant: selectedColor,
                   shopId: product.shopId,
-                  shippingCharge: product.shippingCharge,
-                  taxPercentage: product.taxPercentage
+                  shippingCharge: product.shippingCharge
                 });
               }}
               className="flex-1 bg-black text-white dark:bg-white dark:text-black px-8 py-4 rounded-full font-bold shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"

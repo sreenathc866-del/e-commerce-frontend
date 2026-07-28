@@ -30,6 +30,7 @@ export default function ShopProfile() {
       website: '',
       instagram: '',
       isVisible: true,
+      shippingCharge: 0,
     }
   });
 
@@ -64,8 +65,7 @@ export default function ShopProfile() {
             website: data.website || '',
             instagram: data.instagram || '',
             isVisible: data.is_visible !== false,
-            shippingCharge: data.shipping_charge || 0,
-            taxPercentage: data.tax_percentage || 0
+            shippingCharge: data.shipping_charge || 0
           });
           setLogoPreview(data.logo_url);
           setBannerPreview(data.banner_url);
@@ -163,7 +163,6 @@ export default function ShopProfile() {
         instagram: data.instagram,
         is_visible: data.isVisible,
         shipping_charge: data.shippingCharge,
-        tax_percentage: data.taxPercentage,
         logo_url: logoPreview,
         banner_url: bannerPreview,
         updated_at: new Date().toISOString()
@@ -344,14 +343,6 @@ export default function ShopProfile() {
                     <input type="number" step="0.01" {...register('shippingCharge')} className="block w-full pl-8 pr-3 py-2 border border-gray-200 dark:border-gray-800 rounded-xl focus:ring-black dark:focus:ring-white bg-gray-50 dark:bg-gray-950 text-sm" />
                   </div>
                   {errors.shippingCharge && <p className="text-red-500 text-xs mt-1">{errors.shippingCharge.message as string}</p>}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tax Percentage (%)</label>
-                  <div className="relative">
-                    <input type="number" step="0.1" {...register('taxPercentage')} className="block w-full pr-8 pl-3 py-2 border border-gray-200 dark:border-gray-800 rounded-xl focus:ring-black dark:focus:ring-white bg-gray-50 dark:bg-gray-950 text-sm" />
-                    <span className="absolute right-3 top-2.5 text-gray-500">%</span>
-                  </div>
-                  {errors.taxPercentage && <p className="text-red-500 text-xs mt-1">{errors.taxPercentage.message as string}</p>}
                 </div>
               </div>
             </div>

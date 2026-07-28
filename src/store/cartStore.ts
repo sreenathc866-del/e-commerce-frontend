@@ -12,9 +12,8 @@ export interface CartItem {
   quantity: number;
   stock: number;
   variant?: string;
-  shopId: string;
-  shippingCharge: number;
-  taxPercentage: number;
+  shopId?: string;
+  shippingCharge?: number;
 }
 
 interface CartStore {
@@ -26,7 +25,6 @@ interface CartStore {
   getSubtotal: () => number;
   getDiscount: () => number;
   getTotal: () => number;
-  getTotalTax: () => number;
   getTotalShipping: () => number;
 }
 
@@ -68,23 +66,16 @@ export const useCartStore = create<CartStore>()(
       getTotal: () => {
         return get().getSubtotal() - get().getDiscount();
       },
-      getTotalTax: () => {
-        const items = get().items;
-        return items.reduce((sum, item) => {
-          const itemTotal = item.price * item.quantity;
-          const discountAmt = item.discount ? itemTotal * (item.discount / 100) : 0;
-          const taxableAmount = itemTotal - discountAmt;
-          return sum + (taxableAmount * (item.taxPercentage / 100));
-        }, 0);
-      },
       getTotalShipping: () => {
         const items = get().items;
         // Group by shopId and take the max shipping charge for each shop
         const shopCharges = new Map<string, number>();
         items.forEach(item => {
-          const current = shopCharges.get(item.shopId) || 0;
-          if (item.shippingCharge > current) {
-            shopCharges.set(item.shopId, item.shippingCharge);
+          const shopId = item.shopId || 'default';
+          const charge = item.shippingCharge || 0;
+          const current = shopCharges.get(shopId) || 0;
+          if (charge > current) {
+            shopCharges.set(shopId, charge);
           }
         });
         return Array.from(shopCharges.values()).reduce((sum, charge) => sum + charge, 0);
