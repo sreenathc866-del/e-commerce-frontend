@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, Store, Package, Layers, 
-  ClipboardList, Users, BarChart3, DollarSign, 
+  ClipboardList, Users, BarChart3, IndianRupee, 
   MessageSquare, Bell, Settings, LogOut, Menu, X, CheckCircle2, ShoppingBag, User, ChevronDown
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
@@ -12,17 +12,10 @@ import clsx from 'clsx';
 
 const navItems = [
   { name: 'Dashboard', path: '/dashboard/vendor', icon: LayoutDashboard, exact: true },
+  { name: 'Wallet & Earnings', path: '/dashboard/vendor/wallet', icon: IndianRupee },
   { name: 'Shop Profile', path: '#shop-section', icon: Store },
   { name: 'Products', path: '#products-section', icon: Package },
   { name: 'Orders', path: '#orders-section', icon: ShoppingBag },
-  { name: 'Categories', path: '/dashboard/vendor/categories', icon: Layers },
-  { name: 'Inventory', path: '/dashboard/vendor/inventory', icon: ClipboardList },
-  { name: 'Customers', path: '/dashboard/vendor/customers', icon: Users },
-  { name: 'Analytics', path: '/dashboard/vendor/analytics', icon: BarChart3 },
-  { name: 'Revenue', path: '/dashboard/vendor/revenue', icon: DollarSign },
-  { name: 'Reviews', path: '/dashboard/vendor/reviews', icon: MessageSquare },
-  { name: 'Notifications', path: '/dashboard/vendor/notifications', icon: Bell },
-  { name: 'Settings', path: '/dashboard/vendor/settings', icon: Settings },
 ];
 
 export default function VendorLayout() {
@@ -53,11 +46,10 @@ export default function VendorLayout() {
       </AnimatePresence>
 
       {/* Sidebar */}
-      <motion.aside
-        initial={false}
-        animate={{ x: isSidebarOpen ? 0 : -320 }}
+      <aside
         className={clsx(
-          "fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-2xl lg:shadow-none lg:static lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col"
+          "fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-2xl lg:shadow-none lg:static lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col",
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-gray-800">
@@ -137,7 +129,7 @@ export default function VendorLayout() {
             Sign Out
           </button>
         </div>
-      </motion.aside>
+      </aside>
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">

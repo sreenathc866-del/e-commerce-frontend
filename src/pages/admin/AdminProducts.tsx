@@ -76,7 +76,7 @@ export default function AdminProducts() {
                     <span className="text-sm font-medium text-gray-900 dark:text-white">{product.shop}</span>
                   </td>
                   <td className="py-4 px-6">
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">${product.price.toFixed(2)}</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">₹{product.price.toFixed(2)}</span>
                   </td>
                   <td className="py-4 px-6">
                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${

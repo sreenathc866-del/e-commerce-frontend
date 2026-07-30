@@ -65,7 +65,7 @@ export default function AdminOrders() {
                     <p className="text-xs text-gray-500 mt-1">from <span className="font-medium text-gray-700 dark:text-gray-400">{order.vendor}</span></p>
                   </td>
                   <td className="py-4 px-6">
-                    <p className="font-bold text-gray-900 dark:text-white">${order.total.toFixed(2)}</p>
+                    <p className="font-bold text-gray-900 dark:text-white">₹{order.total.toFixed(2)}</p>
                     <p className="text-xs text-gray-500 mt-1">{order.items} items</p>
                   </td>
                   <td className="py-4 px-6">

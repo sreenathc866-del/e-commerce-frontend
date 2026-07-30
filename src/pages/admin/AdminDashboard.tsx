@@ -1,5 +1,7 @@
-import { Users, Store, Package, ShoppingBag, DollarSign, TrendingUp, AlertTriangle, Cuboid } from 'lucide-react';
+import { Users, Store, Package, ShoppingBag, IndianRupee, TrendingUp, AlertTriangle, Cuboid } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 
 const DATA = [
   { name: 'Mon', revenue: 4000, orders: 24 },
@@ -11,18 +13,47 @@ const DATA = [
   { name: 'Sun', revenue: 7490, orders: 55 },
 ];
 
-const STATS = [
-  { name: 'Total Revenue', value: '$84,250', change: '+12.5%', icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
-  { name: 'Platform Commission', value: '$8,425', change: '+14.2%', icon: TrendingUp, color: 'text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-500/10' },
-  { name: 'Active Vendors', value: '142', change: '+4', icon: Store, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10' },
-  { name: 'Total Customers', value: '8,234', change: '+124', icon: Users, color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-500/10' },
-  { name: 'Total Products', value: '4,521', change: '+89', icon: Package, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-500/10' },
-  { name: 'Pending Orders', value: '45', change: '-12', icon: ShoppingBag, color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-500/10' },
-  { name: 'AI Models Gen.', value: '1,204', change: '+55', icon: Cuboid, color: 'text-cyan-500', bg: 'bg-cyan-50 dark:bg-cyan-500/10' },
-  { name: 'Low Stock Alerts', value: '12', change: '+2', icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-500/10' },
-];
-
 export default function AdminDashboard() {
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/transactions`, {
+          headers: {
+            'Authorization': `Bearer ${sessionData.session?.access_token}`
+          }
+        });
+        if (!res.ok) throw new Error('Failed to fetch');
+        const data = await res.json();
+        setStats(data);
+      } catch (err) {
+        console.error('Failed to fetch admin stats:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchStats();
+  }, []);
+
+  if (loading) return <div className="p-8 text-center">Loading dashboard...</div>;
+  if (!stats) return <div className="p-8 text-center text-red-500">Failed to load dashboard.</div>;
+
+  const formatCurrency = (val: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(val);
+
+  const STATS = [
+    { name: 'Total Revenue', value: formatCurrency(stats.totalRevenue), change: 'Total', icon: IndianRupee, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+    { name: 'Platform Commission', value: formatCurrency(stats.totalCommission), change: 'Total', icon: TrendingUp, color: 'text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-500/10' },
+    { name: 'Vendor Payouts', value: formatCurrency(stats.vendorPayouts), change: 'Processed', icon: Store, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+    { name: 'Pending Transfers', value: formatCurrency(stats.pendingTransfers), change: 'Pending', icon: ShoppingBag, color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-500/10' },
+    { name: 'Active Vendors', value: stats.activeVendors.toString(), change: 'Platform', icon: Users, color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-500/10' },
+    { name: 'Success Rate', value: `${stats.successRate}%`, change: 'Rate', icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+    { name: 'Failed Payments', value: stats.failedPayments.toString(), change: 'Total', icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-500/10' },
+    { name: 'Total Products', value: 'Live', change: 'Beta', icon: Package, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-500/10' },
+  ];
+
   return (
     <div className="space-y-6">
       
@@ -34,9 +65,7 @@ export default function AdminDashboard() {
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${stat.bg}`}>
                 <stat.icon className={`w-6 h-6 ${stat.color}`} />
               </div>
-              <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                stat.change.startsWith('+') ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400'
-              }`}>
+              <span className={`text-xs font-bold px-2 py-1 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400`}>
                 {stat.change}
               </span>
             </div>
@@ -56,13 +85,8 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">Revenue Overview</h3>
-              <p className="text-sm text-gray-500">Last 7 days performance</p>
+              <p className="text-sm text-gray-500">Last 7 days performance (Demo)</p>
             </div>
-            <select className="px-3 py-1.5 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl text-sm font-medium">
-              <option>This Week</option>
-              <option>Last Week</option>
-              <option>This Month</option>
-            </select>
           </div>
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -74,7 +98,7 @@ export default function AdminDashboard() {
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} tickFormatter={(val) => `$${val/1000}k`} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} tickFormatter={(val) => `₹${val/1000}k`} />
                 <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#374151" strokeOpacity={0.1} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#111827', borderRadius: '12px', border: 'none', color: '#fff' }}
@@ -88,33 +112,22 @@ export default function AdminDashboard() {
 
         {/* Recent Activity */}
         <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm flex flex-col">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Recent Activity</h3>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Latest Transactions</h3>
           <div className="flex-1 overflow-y-auto pr-2 space-y-6">
-            {[
-              { title: 'New Vendor Registered', desc: 'TechHaven Electronics joined the platform', time: '5m ago', type: 'vendor' },
-              { title: 'Large Order Placed', desc: 'Order #ORD-8921 for $1,240.00', time: '12m ago', type: 'order' },
-              { title: 'AI Model Generated', desc: '3D Model for "Leather Sofa" completed', time: '1h ago', type: 'ai' },
-              { title: 'Product Out of Stock', desc: 'Vendor "Lumina" ran out of Desk Lamps', time: '2h ago', type: 'alert' },
-              { title: 'Payout Processed', desc: '$4,200 transferred to "AudioTech"', time: '3h ago', type: 'payment' },
-            ].map((activity, i) => (
-              <div key={i} className="flex gap-4 items-start relative">
-                {i !== 4 && <div className="absolute left-4 top-8 bottom-[-24px] w-0.5 bg-gray-100 dark:bg-gray-800 -z-10" />}
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 z-10 ${
-                  activity.type === 'vendor' ? 'bg-blue-100 text-blue-600' :
-                  activity.type === 'order' ? 'bg-emerald-100 text-emerald-600' :
-                  activity.type === 'ai' ? 'bg-indigo-100 text-indigo-600' :
-                  activity.type === 'alert' ? 'bg-red-100 text-red-600' :
-                  'bg-yellow-100 text-yellow-600'
-                }`}>
-                  <span className="w-2.5 h-2.5 rounded-full bg-current" />
+            {stats.recentTransactions.map((tx: any) => (
+              <div key={tx.id} className="flex gap-4 items-start relative">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-emerald-50 dark:bg-emerald-900/30">
+                  <IndianRupee className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-gray-900 dark:text-white">{activity.title}</h4>
-                  <p className="text-xs text-gray-500 mt-0.5">{activity.desc}</p>
-                  <p className="text-xs text-gray-400 font-medium mt-1">{activity.time}</p>
+                  <h4 className="text-sm font-bold text-gray-900 dark:text-white">Transaction: {tx.payment_id || tx.id}</h4>
+                  <p className="text-xs text-gray-500 mt-1">{formatCurrency(tx.amount)} - {tx.status}</p>
                 </div>
               </div>
             ))}
+            {stats.recentTransactions.length === 0 && (
+              <p className="text-sm text-gray-500 text-center mt-4">No transactions yet.</p>
+            )}
           </div>
           <button className="w-full mt-6 py-2.5 bg-gray-50 dark:bg-gray-950 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl text-sm font-bold transition-colors">
             View All Logs

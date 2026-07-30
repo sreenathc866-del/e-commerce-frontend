@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { 
   Package, ShoppingCart, Clock, Truck, CheckCircle, 
-  Users, DollarSign, AlertTriangle, XCircle, ArrowUpRight, ArrowDownRight, Loader2
+  Users, IndianRupee, AlertTriangle, XCircle, ArrowUpRight, ArrowDownRight, Loader2
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { supabase } from '../../lib/supabase';
@@ -53,6 +54,9 @@ export default function VendorDashboard() {
     shipped: 0,
     delivered: 0,
     outOfStock: 0,
+    commissionDeducted: 0,
+    totalPayouts: 0,
+    pendingPayouts: 0,
   });
   const [chartData, setChartData] = useState(emptyData);
 
@@ -60,10 +64,13 @@ export default function VendorDashboard() {
     async function fetchDashboardStats() {
       if (!user) return;
       try {
-        // 1. Get Vendor's Shop
+        // 1. Get Vendor's Shop and Account info
         const { data: shopData } = await supabase
           .from('shops')
-          .select('id')
+          .select(`
+            id, 
+            vendor_accounts ( razorpay_account_id, onboarding_status, kyc_status )
+          `)
           .eq('vendor_id', user.id)
           .single();
 
@@ -72,13 +79,13 @@ export default function VendorDashboard() {
           return;
         }
 
-        const shopId = shopData.id;
+        const sId = shopData.id;
 
         // 2. Get Products
         const { data: products } = await supabase
           .from('products')
           .select('id')
-          .eq('shop_id', shopId);
+          .eq('shop_id', sId);
 
         const productIds = products?.map(p => p.id) || [];
 
@@ -96,7 +103,7 @@ export default function VendorDashboard() {
         const { data: orderItems } = await supabase
           .from('order_items')
           .select('order_id, quantity, unit_price')
-          .eq('shop_id', shopId);
+          .eq('shop_id', sId);
 
         let revenue = 0;
         let orderIds = new Set<string>();
@@ -164,16 +171,44 @@ export default function VendorDashboard() {
           setChartData(last7Days);
         }
 
+        // 6. Fetch real ledger payouts
+        let ledgerRevenue = revenue;
+        let ledgerOrders = uniqueOrderIds.length;
+        let commissionDeducted = 0;
+        let totalPayouts = 0;
+        let pendingPayouts = 0;
+
+        try {
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/vendor/balance`, {
+            headers: {
+              'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+            }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            ledgerRevenue = data.revenue || revenue;
+            commissionDeducted = data.commission_deducted || 0;
+            totalPayouts = data.total_payouts || 0;
+            pendingPayouts = data.pending || 0;
+            ledgerOrders = data.orders_count || uniqueOrderIds.length;
+          }
+        } catch (e) {
+          console.error('Failed to fetch ledger balance', e);
+        }
+
         setStats({
-          revenue,
-          orders: uniqueOrderIds.length,
+          revenue: ledgerRevenue,
+          orders: ledgerOrders,
           customers: customers.size,
           products: productIds.length,
           pending,
           processing,
           shipped,
           delivered,
-          outOfStock
+          outOfStock,
+          commissionDeducted,
+          totalPayouts,
+          pendingPayouts
         });
 
       } catch (error) {
@@ -212,7 +247,13 @@ export default function VendorDashboard() {
 
       {/* Primary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Total Revenue" value={`₹${stats.revenue.toFixed(2)}`} icon={DollarSign} trend={stats.revenue > 0 ? "+0.0%" : undefined} trendUp={true} color="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400" />
+        <StatCard title="Total Revenue" value={`₹${stats.revenue.toFixed(2)}`} icon={IndianRupee} trend={stats.revenue > 0 ? "+0.0%" : undefined} trendUp={true} color="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400" />
+        <StatCard title="Platform Commission" value={`₹${stats.commissionDeducted.toFixed(2)}`} icon={AlertTriangle} color="bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400" />
+        <StatCard title="Total Payouts" value={`₹${stats.totalPayouts.toFixed(2)}`} icon={CheckCircle} color="bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400" />
+        <StatCard title="Pending Payouts" value={`₹${stats.pendingPayouts.toFixed(2)}`} icon={Clock} color="bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400" />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard title="Total Orders" value={stats.orders} icon={ShoppingCart} trend={stats.orders > 0 ? "+0.0%" : undefined} trendUp={true} color="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" />
         <StatCard title="Total Customers" value={stats.customers} icon={Users} color="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400" />
         <StatCard title="Total Products" value={stats.products} icon={Package} color="bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400" />

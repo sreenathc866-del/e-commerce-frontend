@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Save, Globe, DollarSign, Percent, Mail, Database, Shield, Zap } from 'lucide-react';
+import { Save, Globe, IndianRupee, Percent, Mail, Database, Shield, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AdminSettings() {
@@ -59,7 +59,7 @@ export default function AdminSettings() {
 
           <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-emerald-500" /> Financial & Commission
+              <IndianRupee className="w-5 h-5 text-emerald-500" /> Financial & Commission
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>

@@ -103,7 +103,7 @@ export default function Orders() {
                       <p className="text-sm text-gray-500">Placed on {new Date(order.date).toLocaleDateString()}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-lg text-gray-900 dark:text-white">${order.total.toFixed(2)}</p>
+                      <p className="font-bold text-lg text-gray-900 dark:text-white">₹{order.total.toFixed(2)}</p>
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold mt-1 ${
                         order.status === 'Delivered' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' :
                         order.status === 'Shipped' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :

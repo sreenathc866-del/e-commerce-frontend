@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, Users, Store, Package, ShoppingBag, 
-  Settings, LogOut, Menu, X, ShieldAlert, BarChart3, Bell
+  Settings, LogOut, Menu, X, ShieldAlert, BarChart3, Bell, IndianRupee
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import ThemeToggle from '../ThemeToggle';
@@ -16,6 +16,7 @@ const NAVIGATION = [
   { name: 'Shops', path: '/dashboard/admin/shops', icon: Store },
   { name: 'Products', path: '/dashboard/admin/products', icon: Package },
   { name: 'Orders', path: '/dashboard/admin/orders', icon: ShoppingBag },
+  { name: 'Withdrawals', path: '/dashboard/admin/withdrawals', icon: IndianRupee },
   { name: 'Analytics', path: '/dashboard/admin/analytics', icon: BarChart3 },
   { name: 'Settings', path: '/dashboard/admin/settings', icon: Settings },
 ];

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Package, DollarSign, Box, Image as ImageIcon, 
+  Package, IndianRupee, Box, Image as ImageIcon, 
   Wand2, FileText, LayoutList, Truck, Search,
   CheckCircle2, ChevronRight, ChevronLeft, Upload, Save, Loader2, X
 } from 'lucide-react';
@@ -11,7 +11,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 const STEPS = [
   { id: 1, title: 'Basic Info', icon: Package },
-  { id: 2, title: 'Pricing', icon: DollarSign },
+  { id: 2, title: 'Pricing', icon: IndianRupee },
   { id: 3, title: 'Inventory', icon: Box },
   { id: 4, title: 'Images', icon: ImageIcon },
 ];

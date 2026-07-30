@@ -18,7 +18,7 @@ const STEPS = [
 
 export default function Checkout() {
   const [currentStep, setCurrentStep] = useState(1);
-  const { items, getSubtotal, getTotal, getTotalShipping, clearCart } = useCartStore();
+  const { items, getSubtotal, getTotal, getTotalShipping, clearCart, updatePrice } = useCartStore();
   const navigate = useNavigate();
 
   const { user } = useAuthStore();
@@ -28,7 +28,7 @@ export default function Checkout() {
   });
   
   const [shippingMethod, setShippingMethod] = useState('standard');
-  const [paymentMethod, setPaymentMethod] = useState('razorpay');
+  const [paymentMethod, setPaymentMethod] = useState<'payu' | 'cod'>('payu');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showProfileCompleteModal, setShowProfileCompleteModal] = useState(false);
 
@@ -70,7 +70,65 @@ export default function Checkout() {
     loadDefaultAddress();
   }, [user]);
 
-  const handleRazorpayMock = async () => {
+  // Sync cart prices with latest database prices to avoid Razorpay mismatches
+  useEffect(() => {
+    async function syncCartPrices() {
+      if (!items || items.length === 0) return;
+      const productIds = items.map(item => item.productId);
+      
+      const { data: latestProducts } = await supabase
+        .from('products')
+        .select('id, price')
+        .in('id', productIds);
+        
+      if (latestProducts) {
+        latestProducts.forEach(product => {
+          const cartItem = items.find(i => i.productId === product.id);
+          if (cartItem && cartItem.price !== Number(product.price)) {
+            updatePrice(product.id, Number(product.price));
+          }
+        });
+      }
+    }
+    syncCartPrices();
+  }, [items.length]); // Only run when items array length changes, or on mount
+
+  const getOrCreateAddress = async () => {
+    let addressId = '';
+    const { data: existingAddr } = await supabase
+      .from('addresses')
+      .select('id')
+      .eq('user_id', user!.id)
+      .eq('address_line1', address.house)
+      .eq('zip_code', address.zip)
+      .maybeSingle();
+
+    if (existingAddr) {
+      addressId = existingAddr.id;
+    } else {
+      const { data: newAddr, error: addrError } = await supabase
+        .from('addresses')
+        .insert({
+          user_id: user!.id,
+          full_name: address.fullName,
+          mobile: address.mobile,
+          address_line1: address.house,
+          address_line2: address.street,
+          city: address.city,
+          state: address.state,
+          zip_code: address.zip,
+          country: address.country
+        })
+        .select()
+        .single();
+
+      if (addrError) throw addrError;
+      addressId = newAddr.id;
+    }
+    return addressId;
+  };
+
+  const handleRazorpayPayment = async () => {
     if (!user) return;
     
     // Check if profile has phone number
@@ -81,94 +139,81 @@ export default function Checkout() {
 
     setIsProcessing(true);
     try {
-      // 1. Get product details to retrieve shop_ids
-      const productIds = items.map(item => item.productId);
-      const { data: dbProducts, error: dbProductsError } = await supabase
-        .from('products')
-        .select('id, shop_id')
-        .in('id', productIds);
+      // 1. Get or create address
+      const addressId = await getOrCreateAddress();
 
-      if (dbProductsError || !dbProducts) {
-        throw new Error('Failed to verify products');
-      }
-
-      // Map product to shop ID
-      const productShopMap = dbProducts.reduce((acc: any, curr: any) => {
-        acc[curr.id] = curr.shop_id;
-        return acc;
-      }, {});
-
-      // 2. Fetch or Create Address row in DB
-      let addressId = '';
-      const { data: existingAddr } = await supabase
-        .from('addresses')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('address_line1', address.house)
-        .eq('zip_code', address.zip)
-        .maybeSingle();
-
-      if (existingAddr) {
-        addressId = existingAddr.id;
-      } else {
-        const { data: newAddr, error: addrError } = await supabase
-          .from('addresses')
-          .insert({
-            user_id: user.id,
-            full_name: address.fullName,
-            mobile: address.mobile,
-            address_line1: address.house,
-            address_line2: address.street,
-            city: address.city,
-            state: address.state,
-            zip_code: address.zip,
-            country: address.country
-          })
-          .select()
-          .single();
-
-        if (addrError) throw addrError;
-        addressId = newAddr.id;
-      }
-
-      // 3. Create Order
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          customer_id: user.id,
-          shipping_address_id: addressId,
-          total_amount: grandTotal,
-          status: 'pending',
-          payment_status: 'paid', // mocked payment success
-          payment_method: paymentMethod
+      // 2. Create order on Backend
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/payments/create-order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        },
+        body: JSON.stringify({
+          customerId: user.id,
+          addressId: addressId,
+          items: items.map(item => ({
+            productId: item.productId,
+            quantity: item.quantity
+          }))
         })
-        .select()
-        .single();
+      });
 
-      if (orderError) throw orderError;
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to initiate payment');
+      }
 
-      // 4. Create Order Items
-      const orderItemsRows = items.map(item => ({
-        order_id: order.id,
-        product_id: item.productId,
-        shop_id: productShopMap[item.productId] || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', // fallback UUID if missing
-        quantity: item.quantity,
-        price: item.price
-      }));
+      const orderData = await response.json();
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItemsRows);
+      // 3. Open Razorpay Checkout Modal
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: 'Aura',
+        description: 'Store Purchase',
+        order_id: orderData.id,
+        handler: async function (response: any) {
+          try {
+            const verifyRes = await fetch(`${import.meta.env.VITE_API_URL}/payments/verify-payment`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
 
-      if (itemsError) throw itemsError;
+            if (!verifyRes.ok) throw new Error('Payment verification failed');
 
-      // Simulate payment delay
-      setTimeout(() => {
-        setIsProcessing(false);
-        clearCart();
-        toast.success('Order placed successfully!');
-        navigate('/customer/orders?success=true');
-      }, 1500);
+            clearCart();
+            navigate('/customer/orders?success=true');
+          } catch (err: any) {
+            toast.error(err.message || 'Payment verification failed');
+          }
+        },
+        prefill: {
+          name: address.fullName,
+          email: user.email,
+          contact: address.mobile || user.phone || '9999999999'
+        },
+        theme: {
+          color: '#000000'
+        }
+      };
+
+      const rzp1 = new (window as any).Razorpay(options);
+      rzp1.on('payment.failed', function (response: any) {
+        toast.error(`Payment failed: ${response.error.description}`);
+      });
+      rzp1.open();
+      
+      setIsProcessing(false);
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || 'Failed to place order');
@@ -184,8 +229,16 @@ export default function Checkout() {
       }
     }
     
-    if (currentStep < 4) setCurrentStep(s => s + 1);
-    else handleRazorpayMock();
+    if (currentStep < 4) {
+      setCurrentStep(s => s + 1);
+    } else if (currentStep === 4) {
+      if (paymentMethod === 'razorpay') {
+        handleRazorpayPayment();
+      } else {
+        // Handle COD flow here later...
+        toast.info('Cash on Delivery selected (Mocked)');
+      }
+    }
   };
 
   if (items.length === 0 && !isProcessing) {
@@ -259,17 +312,21 @@ export default function Checkout() {
                         <p className="text-sm text-gray-500">3-5 business days</p>
                       </div>
                     </div>
-                    <span className="font-bold">$15.00</span>
+                    <span className="font-bold">₹15.00</span>
                   </label>
                   <label className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${shippingMethod === 'express' ? 'border-black dark:border-white bg-gray-50 dark:bg-gray-900' : 'border-gray-200 dark:border-gray-800'}`}>
                     <div className="flex items-center gap-4">
                       <input type="radio" name="shipping" checked={shippingMethod === 'express'} onChange={() => setShippingMethod('express')} className="w-5 h-5 text-black focus:ring-black" />
                       <div>
-                        <h4 className="font-bold">Express Delivery</h4>
-                        <p className="text-sm text-gray-500">1-2 business days</p>
+                        <div className="flex items-center gap-3">
+                        <div className="w-10 h-6 bg-green-50 rounded border border-green-200 flex items-center justify-center font-bold text-[10px] text-green-700">
+                          PAYU
+                        </div>
+                        <span className="font-medium text-gray-900">PayU Checkout</span>
+                      </div>
                       </div>
                     </div>
-                    <span className="font-bold">$25.00</span>
+                    <span className="font-bold">₹25.00</span>
                   </label>
                 </div>
               </motion.div>
@@ -337,7 +394,7 @@ export default function Checkout() {
               disabled={isProcessing}
               className="px-8 py-3 bg-black text-white dark:bg-white dark:text-black rounded-full font-bold shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 ml-auto disabled:opacity-70 disabled:cursor-wait"
             >
-              {isProcessing ? 'Processing Payment...' : currentStep === 4 ? `Pay $${grandTotal.toFixed(2)}` : 'Continue'} 
+              {isProcessing ? 'Processing Payment...' : currentStep === 4 ? `Pay ₹${grandTotal.toFixed(2)}` : 'Continue'} 
               {!isProcessing && currentStep < 4 && <ChevronRight className="w-5 h-5" />}
               {!isProcessing && currentStep === 4 && <Lock className="w-4 h-4" />}
             </button>
@@ -356,7 +413,7 @@ export default function Checkout() {
                   <div className="flex-1">
                     <h4 className="font-bold text-sm line-clamp-1">{item.name}</h4>
                     <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-                    <p className="font-bold text-sm">${(item.price * item.quantity).toFixed(2)}</p>
+                    <p className="font-bold text-sm">₹{(item.price * item.quantity).toFixed(2)}</p>
                   </div>
                 </div>
               ))}
@@ -365,18 +422,18 @@ export default function Checkout() {
             <div className="space-y-4 mb-6 text-sm text-gray-600 dark:text-gray-400 pt-6 border-t border-gray-100 dark:border-gray-800">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span className="font-medium text-gray-900 dark:text-white">${getSubtotal().toFixed(2)}</span>
+                <span className="font-medium text-gray-900 dark:text-white">₹{getSubtotal().toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Shipping</span>
-                <span className="font-medium text-gray-900 dark:text-white">${shippingCost.toFixed(2)}</span>
+                <span className="font-medium text-gray-900 dark:text-white">₹{shippingCost.toFixed(2)}</span>
               </div>
             </div>
 
             <div className="pt-6 border-t border-gray-200 dark:border-gray-800">
               <div className="flex justify-between items-end">
                 <span className="font-bold text-gray-900 dark:text-white">Total</span>
-                <span className="font-extrabold text-3xl text-gray-900 dark:text-white">${grandTotal.toFixed(2)}</span>
+                <span className="font-extrabold text-3xl text-gray-900 dark:text-white">₹{grandTotal.toFixed(2)}</span>
               </div>
             </div>
           </div>

@@ -37,7 +37,8 @@ export default function ProductDetails() {
             id, title, description, price, rating,
             shops ( id, name, shipping_charge, tax_percentage ),
             product_images ( image_url ),
-            product_3d_models ( model_url )
+            product_3d_models ( model_url ),
+            inventory ( stock_quantity )
           `)
           .eq('id', id)
           .single();
@@ -62,7 +63,9 @@ export default function ProductDetails() {
             rating: Number(data.rating) || 0,
             reviews: Math.floor(Math.random() * 150),
             description: data.description || 'No description available.',
-            stock: 12,
+            stock: Array.isArray(data.inventory) 
+              ? (data.inventory as any)[0]?.stock_quantity || 0 
+              : (data.inventory as any)?.stock_quantity || 0,
             modelUrl: data.product_3d_models?.[0]?.model_url || 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
             images: data.product_images?.length > 0 
               ? data.product_images.map((img: any) => img.image_url)

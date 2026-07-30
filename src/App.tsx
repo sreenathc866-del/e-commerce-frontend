@@ -19,6 +19,7 @@ import Wishlist from './pages/customer/Wishlist';
 import Checkout from './pages/customer/Checkout';
 import Orders from './pages/customer/Orders';
 import VendorOrders from './pages/vendor/VendorOrders';
+import VendorWallet from './pages/vendor/VendorWallet';
 import Unauthorized from './pages/Unauthorized';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuthStore } from './store/authStore';
@@ -31,6 +32,7 @@ import AdminShops from './pages/admin/AdminShops';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminSettings from './pages/admin/AdminSettings';
+import AdminWithdrawals from './pages/admin/AdminWithdrawals';
 
 function RootRedirect() {
   const location = useLocation();
@@ -125,6 +127,7 @@ function App() {
           >
             <Route index element={<VendorDashboard />} />
             <Route path="shop" element={<ShopProfile />} />
+            <Route path="wallet" element={<VendorWallet />} />
             <Route path="orders" element={<VendorOrders />} />
             <Route path="products">
               <Route index element={<ProductsList />} />
@@ -148,6 +151,7 @@ function App() {
             <Route path="shops" element={<AdminShops />} />
             <Route path="products" element={<AdminProducts />} />
             <Route path="orders" element={<AdminOrders />} />
+            <Route path="withdrawals" element={<AdminWithdrawals />} />
             {/* Using AdminDashboard for Analytics as it contains charts, and settings separately */}
             <Route path="analytics" element={<AdminDashboard />} />
             <Route path="settings" element={<AdminSettings />} />

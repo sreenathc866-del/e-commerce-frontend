@@ -23,7 +23,7 @@ export default function LoginForm() {
   const [searchParams] = useSearchParams();
   const returnUrl = searchParams.get('returnUrl');
 
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
+  const { register, handleSubmit, getValues, formState: { errors } } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
 
@@ -65,6 +65,30 @@ export default function LoginForm() {
       toast.error(error.message || 'Failed to sign in', { id });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    const email = getValues('email');
+    if (!email || !email.includes('@')) {
+      toast.error('Please enter a valid email address first');
+      return;
+    }
+    
+    const id = toast.loading('Sending reset link...');
+    try {
+      const emailParts = email.split('@');
+      const vendorEmail = `${emailParts[0]}+vendor@${emailParts[1]}`;
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(vendorEmail, {
+        redirectTo: `${window.location.origin}/auth/update-password`,
+      });
+      
+      if (error) throw error;
+      toast.success('Password reset link sent to your email!', { id });
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send reset link', { id });
     }
   };
 
@@ -115,7 +139,13 @@ export default function LoginForm() {
           <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">Remember me</label>
         </div>
         <div className="text-sm">
-          <a href="#" className="font-medium text-black hover:text-gray-700 dark:text-white dark:hover:text-gray-300">Forgot your password?</a>
+          <button 
+            type="button" 
+            onClick={handleResetPassword}
+            className="font-medium text-black hover:text-gray-700 dark:text-white dark:hover:text-gray-300"
+          >
+            Forgot your password?
+          </button>
         </div>
       </div>
 

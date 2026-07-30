@@ -82,7 +82,7 @@ export default function AdminCustomers() {
                     </span>
                   </td>
                   <td className="py-4 px-6">
-                    <span className="font-bold text-gray-900 dark:text-white">${customer.spent.toFixed(2)}</span>
+                    <span className="font-bold text-gray-900 dark:text-white">₹{customer.spent.toFixed(2)}</span>
                   </td>
                   <td className="py-4 px-6">
                     <span className="text-gray-600 dark:text-gray-400 font-medium">{customer.orders} orders</span>

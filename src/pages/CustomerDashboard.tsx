@@ -335,7 +335,7 @@ export default function CustomerDashboard() {
                             ))}
                           </div>
                           <div className="text-right">
-                            <p className="font-extrabold text-lg">${order.total_amount}</p>
+                            <p className="font-extrabold text-lg">₹{order.total_amount}</p>
                             <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                               order.status === 'delivered' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-400' :
                               order.status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-950/20 dark:text-red-400' :

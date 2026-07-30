@@ -40,7 +40,8 @@ export default function VendorOrders() {
               status,
               created_at,
               profiles ( full_name ),
-              addresses ( address_line1, city, state, zip_code )
+              addresses ( address_line1, city, state, zip_code ),
+              transactions ( payment_id )
             )
           `)
           .eq('shop_id', shop.id);
@@ -53,7 +54,7 @@ export default function VendorOrders() {
         if (orderItems) {
           orderItems.forEach((item: any) => {
             const orderData = Array.isArray(item.orders) ? item.orders[0] : item.orders;
-            if (!orderData) return;
+            if (!orderData || orderData.status === 'pending') return;
             const orderId = orderData.id;
             
             if (!groupedOrders.has(orderId)) {
@@ -64,6 +65,8 @@ export default function VendorOrders() {
                 ? `${addressData.address_line1}, ${addressData.city}, ${addressData.state} ${addressData.zip_code}` 
                 : 'No address provided';
 
+              const txData = Array.isArray(orderData.transactions) ? orderData.transactions[0] : orderData.transactions;
+
               groupedOrders.set(orderId, {
                 id: orderId,
                 customer: customerData?.full_name || 'Unknown Customer',
@@ -71,7 +74,8 @@ export default function VendorOrders() {
                 total: 0,
                 status: orderData.status,
                 items: [],
-                address: addressStr
+                address: addressStr,
+                paymentId: txData?.payment_id || null
               });
             }
 
@@ -116,6 +120,43 @@ export default function VendorOrders() {
     } catch (e) {
       console.error("Failed to update status", e);
       alert("Failed to update order status");
+    }
+  };
+
+  const handleRefund = async (orderId: string, paymentId: string, amount: number) => {
+    if (!paymentId) {
+      alert("No payment ID found for this order. Cannot process refund.");
+      return;
+    }
+    const confirmRefund = window.confirm(`Are you sure you want to refund ₹${amount}? This cannot be undone.`);
+    if (!confirmRefund) return;
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/refunds/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionData.session?.access_token}`
+        },
+        body: JSON.stringify({
+          paymentId,
+          amount,
+          orderId,
+          reason: 'Vendor cancelled order'
+        })
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to process refund');
+      }
+
+      alert('Refund processed successfully!');
+      updateOrderStatus(orderId, 'cancelled');
+    } catch (e: any) {
+      console.error(e);
+      alert(e.message || 'Error processing refund');
     }
   };
 
@@ -289,9 +330,14 @@ export default function VendorOrders() {
                     <CheckCircle2 className="w-4 h-4" /> Mark as Delivered
                   </button>
                 )}
-                <button className="px-6 py-2.5 border border-red-200 text-red-600 rounded-xl font-bold hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2">
-                  <XCircle className="w-4 h-4" /> Cancel Order
-                </button>
+                {selectedOrder.status !== 'cancelled' && (
+                  <button 
+                    onClick={() => handleRefund(selectedOrder.id, selectedOrder.paymentId, selectedOrder.total)} 
+                    className="px-6 py-2.5 border border-red-200 text-red-600 rounded-xl font-bold hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2"
+                  >
+                    <XCircle className="w-4 h-4" /> Cancel & Refund
+                  </button>
+                )}
               </div>
             </div>
           </div>

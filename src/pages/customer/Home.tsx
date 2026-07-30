@@ -424,7 +424,7 @@ export default function Home() {
                 <Truck className="w-8 h-8" />
               </div>
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Free Shipping</h3>
-              <p className="text-gray-500 dark:text-gray-400">On all orders over $50</p>
+              <p className="text-gray-500 dark:text-gray-400">On all orders over ₹50</p>
             </div>
             <div className="flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-6">

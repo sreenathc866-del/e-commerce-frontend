@@ -101,9 +101,9 @@ export default function ProductListing() {
             <div className="space-y-4">
               <input type="range" className="w-full accent-black dark:accent-white" />
               <div className="flex items-center justify-between gap-4">
-                <input type="text" placeholder="$0" className="w-full text-sm px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-center" />
+                <input type="text" placeholder="₹0" className="w-full text-sm px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-center" />
                 <span className="text-gray-400">-</span>
-                <input type="text" placeholder="$1000+" className="w-full text-sm px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-center" />
+                <input type="text" placeholder="₹1000+" className="w-full text-sm px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-center" />
               </div>
             </div>
           </div>
