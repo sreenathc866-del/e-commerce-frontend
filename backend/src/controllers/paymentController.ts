@@ -191,15 +191,15 @@ export const verifyPayment = async (req: Request, res: Response): Promise<void> 
     if (orderItems && !fetchItemsError) {
        for (const item of orderItems) {
          const vendorId = Array.isArray(item.shops) ? (item.shops[0] as any)?.vendor_id : (item.shops as any)?.vendor_id;
-         if (vendorId) {
-           await walletService.creditVendor(
-             vendorId, 
-             updatedOrder.id, 
-             Number(item.gross_amount), 
-             Number(item.commission), 
-             Number(item.vendor_amount)
-           );
-         }
+         // if (vendorId) {
+         //   await walletService.creditVendor(
+         //     vendorId, 
+         //     updatedOrder.id, 
+         //     Number(item.gross_amount), 
+         //     Number(item.commission), 
+         //     Number(item.vendor_amount)
+         //   );
+         // }
        }
     }
 
