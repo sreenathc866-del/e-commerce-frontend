@@ -99,50 +99,13 @@ export default function VendorDashboard() {
           outOfStock = inventory?.filter(inv => inv.stock_quantity === 0).length || 0;
         }
 
-        // 4. Get Order Items for this shop (to get revenue and unique orders)
+        // 4. Get Order Items for this shop (for chart data)
         const { data: orderItems } = await supabase
           .from('order_items')
-          .select('order_id, quantity, unit_price')
+          .select('quantity, unit_price, created_at')
           .eq('shop_id', sId);
 
-        let revenue = 0;
-        let orderIds = new Set<string>();
-
         if (orderItems) {
-          orderItems.forEach(item => {
-            revenue += item.quantity * item.unit_price;
-            orderIds.add(item.order_id);
-          });
-        }
-
-        const uniqueOrderIds = Array.from(orderIds);
-
-        // 5. Get Orders for statuses and customers
-        let pending = 0;
-        let processing = 0;
-        let shipped = 0;
-        let delivered = 0;
-        let customers = new Set<string>();
-
-        if (uniqueOrderIds.length > 0) {
-          const { data: orders } = await supabase
-            .from('orders')
-            .select('id, status, customer_id, created_at')
-            .in('id', uniqueOrderIds);
-
-          const orderMap = new Map();
-
-          if (orders) {
-            orders.forEach(order => {
-              customers.add(order.customer_id);
-              if (order.status === 'pending') pending++;
-              if (order.status === 'confirmed' || order.status === 'packed') processing++;
-              if (order.status === 'shipped') shipped++;
-              if (order.status === 'delivered') delivered++;
-              orderMap.set(order.id, order.created_at);
-            });
-          }
-
           // Build chart data for the last 7 days
           const last7Days = Array.from({ length: 7 }).map((_, i) => {
             const d = new Date();
@@ -155,28 +118,31 @@ export default function VendorDashboard() {
             };
           });
 
-          if (orderItems) {
-            orderItems.forEach(item => {
-              const orderDateStr = orderMap.get(item.order_id);
-              if (orderDateStr) {
-                const itemDateStr = orderDateStr.split('T')[0];
-                const dayObj = last7Days.find(d => d.dateString === itemDateStr);
-                if (dayObj) {
-                  dayObj.sales += item.quantity;
-                  dayObj.revenue += item.quantity * item.unit_price;
-                }
+          orderItems.forEach(item => {
+            if (item.created_at) {
+              const itemDateStr = item.created_at.split('T')[0];
+              const dayObj = last7Days.find(d => d.dateString === itemDateStr);
+              if (dayObj) {
+                dayObj.sales += item.quantity;
+                dayObj.revenue += item.quantity * item.unit_price;
               }
-            });
-          }
+            }
+          });
           setChartData(last7Days);
         }
 
-        // 6. Fetch real ledger payouts
-        let ledgerRevenue = revenue;
-        let ledgerOrders = uniqueOrderIds.length;
+        let pending = 0;
+        let processing = 0;
+        let shipped = 0;
+        let delivered = 0;
+        let outOfStock = 0;
+        let customers = 0;
         let commissionDeducted = 0;
         let totalPayouts = 0;
         let pendingPayouts = 0;
+        let ledgerRevenue = 0;
+        let ledgerOrders = 0;
+        let productsCount = 0;
 
         try {
           const res = await fetch(`${import.meta.env.VITE_API_URL}/vendor/balance`, {
@@ -186,11 +152,21 @@ export default function VendorDashboard() {
           });
           if (res.ok) {
             const data = await res.json();
-            ledgerRevenue = data.revenue || revenue;
+            ledgerRevenue = data.revenue || 0;
             commissionDeducted = data.commission_deducted || 0;
             totalPayouts = data.total_payouts || 0;
             pendingPayouts = data.pending || 0;
-            ledgerOrders = data.orders_count || uniqueOrderIds.length;
+            ledgerOrders = data.orders_count || 0;
+            customers = data.customers_count || 0;
+            productsCount = data.products_count || 0;
+            
+            if (data.order_statuses) {
+              pending = data.order_statuses.pending || 0;
+              processing = data.order_statuses.processing || 0;
+              shipped = data.order_statuses.shipped || 0;
+              delivered = data.order_statuses.delivered || 0;
+              outOfStock = data.order_statuses.outOfStock || 0;
+            }
           }
         } catch (e) {
           console.error('Failed to fetch ledger balance', e);
@@ -199,8 +175,8 @@ export default function VendorDashboard() {
         setStats({
           revenue: ledgerRevenue,
           orders: ledgerOrders,
-          customers: customers.size,
-          products: productIds.length,
+          customers: customers,
+          products: productsCount,
           pending,
           processing,
           shipped,

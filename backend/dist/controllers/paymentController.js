@@ -152,13 +152,7 @@ const verifyPayment = async (req, res) => {
             res.status(404).json({ error: 'Order not found for this payment' });
             return;
         }
-        // Insert payment log
-        await supabase_1.supabaseAdmin.from('payment_logs').insert({
-            order_id: updatedOrder.id,
-            event_type: 'payment.verified',
-            status: 'success',
-            description: 'Payment ' + razorpay_payment_id + ' successfully verified.'
-        });
+        // removed payment_logs insertion since table doesn't exist
         // 4. Update the order items and credit vendor wallets
         const { data: orderItems, error: fetchItemsError } = await supabase_1.supabaseAdmin
             .from('order_items')
