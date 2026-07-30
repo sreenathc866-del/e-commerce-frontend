@@ -1,0 +1,28 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const auth_1 = __importDefault(require("./auth"));
+const vendor_1 = __importDefault(require("./vendor"));
+const customer_1 = __importDefault(require("./customer"));
+const products_1 = __importDefault(require("./products"));
+const orders_1 = __importDefault(require("./orders"));
+const payments_1 = __importDefault(require("./payments"));
+const admin_1 = __importDefault(require("./admin"));
+const refunds_1 = __importDefault(require("./refunds"));
+const wallet_1 = __importDefault(require("./wallet"));
+const withdrawals_1 = __importDefault(require("./withdrawals"));
+const router = (0, express_1.Router)();
+router.use('/auth', auth_1.default);
+router.use('/vendor', vendor_1.default);
+router.use('/customer', customer_1.default);
+router.use('/products', products_1.default);
+router.use('/orders', orders_1.default);
+router.use('/payments', payments_1.default);
+router.use('/admin', admin_1.default);
+router.use('/refunds', refunds_1.default);
+router.use('/wallet', wallet_1.default);
+router.use('/withdrawals', withdrawals_1.default);
+exports.default = router;
