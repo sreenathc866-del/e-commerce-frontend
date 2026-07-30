@@ -115,10 +115,10 @@ export default function Orders() {
     const invoiceWindow = window.open('', '_blank');
     if (!invoiceWindow) return;
     
-    const html = \`
+    const html = `
       <html>
         <head>
-          <title>Invoice - \${order.id}</title>
+          <title>Invoice - ${order.id}</title>
           <style>
             body { font-family: system-ui, -apple-system, sans-serif; padding: 40px; color: #111; max-width: 800px; margin: 0 auto; line-height: 1.5; }
             .header { display: flex; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 40px; }
@@ -137,7 +137,7 @@ export default function Orders() {
           <div class="header">
             <div>
               <h1 class="title">AURA INVOICE</h1>
-              <p style="color: #6b7280; font-size: 14px; margin-top: 8px;">Order ID: \${order.id}<br>Date: \${new Date(order.date).toLocaleString()}</p>
+              <p style="color: #6b7280; font-size: 14px; margin-top: 8px;">Order ID: ${order.id}<br>Date: ${new Date(order.date).toLocaleString()}</p>
             </div>
             <div style="text-align: right; color: #4b5563; font-size: 14px;">
               <p><strong>Aura Platform</strong><br>123 Commerce St.<br>Tech City, TC 12345</p>
@@ -155,22 +155,22 @@ export default function Orders() {
               </tr>
             </thead>
             <tbody>
-              \${order.items.map(item => \`
+              ${order.items.map(item => `
                 <tr>
-                  <td>\${item.name}</td>
-                  <td>\${item.vendor}</td>
-                  <td>\${item.qty}</td>
-                  <td>₹\${item.price.toFixed(2)}</td>
-                  <td style="text-align: right;">₹\${(item.qty * item.price).toFixed(2)}</td>
+                  <td>${item.name}</td>
+                  <td>${item.vendor}</td>
+                  <td>${item.qty}</td>
+                  <td>₹${item.price.toFixed(2)}</td>
+                  <td style="text-align: right;">₹${(item.qty * item.price).toFixed(2)}</td>
                 </tr>
-              \`).join('')}
+              `).join('')}
             </tbody>
           </table>
 
           <div class="totals">
             <div class="totals-row bold">
               <span>Total Amount Paid</span>
-              <span>₹\${order.total.toFixed(2)}</span>
+              <span>₹${order.total.toFixed(2)}</span>
             </div>
           </div>
 
@@ -180,7 +180,7 @@ export default function Orders() {
           </div>
         </body>
       </html>
-    \`;
+    `;
     
     invoiceWindow.document.write(html);
     invoiceWindow.document.close();
@@ -253,13 +253,13 @@ export default function Orders() {
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-lg text-gray-900 dark:text-white">₹{order.total.toFixed(2)}</p>
-                        <span className={\`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold mt-1 uppercase \${
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold mt-1 uppercase ${
                           order.status === 'delivered' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' :
                           order.status === 'shipped' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
                           order.status === 'paid' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400' :
                           order.status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
                           'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-                        }\`}>
+                        }`}>
                           {order.status}
                         </span>
                       </div>
@@ -313,13 +313,13 @@ export default function Orders() {
                             {order.timeline.map((step, idx) => (
                               <div key={idx} className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 pl-12 sm:pl-0">
                                 <div className="sm:w-1/2 sm:pr-8 text-left sm:text-right order-2 sm:order-1">
-                                  <h5 className={\`font-bold \${step.completed ? 'text-gray-900 dark:text-white' : 'text-gray-400'}\`}>{step.status}</h5>
+                                  <h5 className={`font-bold ${step.completed ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>{step.status}</h5>
                                   {step.date && <p className="text-xs text-gray-500 mt-1">{step.date}</p>}
                                 </div>
                                 
-                                <div className={\`absolute left-4 sm:left-1/2 w-8 h-8 rounded-full border-4 border-white dark:border-gray-900 -translate-x-1/2 flex items-center justify-center z-10 order-1 sm:order-2 \${
+                                <div className={`absolute left-4 sm:left-1/2 w-8 h-8 rounded-full border-4 border-white dark:border-gray-900 -translate-x-1/2 flex items-center justify-center z-10 order-1 sm:order-2 ${
                                   step.completed ? (step.status === 'Cancelled' ? 'bg-red-600' : 'bg-indigo-600') : 'bg-gray-200 dark:bg-gray-800'
-                                }\`}>
+                                }`}>
                                   {step.completed && <CheckCircle2 className="w-4 h-4 text-white" />}
                                 </div>
 
