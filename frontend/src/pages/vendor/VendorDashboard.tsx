@@ -81,23 +81,6 @@ export default function VendorDashboard() {
 
         const sId = shopData.id;
 
-        // 2. Get Products
-        const { data: products } = await supabase
-          .from('products')
-          .select('id')
-          .eq('shop_id', sId);
-
-        const productIds = products?.map(p => p.id) || [];
-
-        // 3. Get Inventory for Out of Stock
-        let outOfStock = 0;
-        if (productIds.length > 0) {
-          const { data: inventory } = await supabase
-            .from('inventory')
-            .select('stock_quantity')
-            .in('product_id', productIds);
-          outOfStock = inventory?.filter(inv => inv.stock_quantity === 0).length || 0;
-        }
 
         // 4. Get Order Items for this shop (for chart data)
         const { data: orderItems } = await supabase
