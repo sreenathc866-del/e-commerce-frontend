@@ -28,6 +28,7 @@ export default function Checkout() {
   });
   
   const [shippingMethod, setShippingMethod] = useState('standard');
+  // force cache invalidation for frontend deployment build
   const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'cod'>('razorpay');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showProfileCompleteModal, setShowProfileCompleteModal] = useState(false);
