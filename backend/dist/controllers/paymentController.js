@@ -141,7 +141,7 @@ const verifyPayment = async (req, res) => {
         const { data: updatedOrder, error: updateError } = await supabase_1.supabaseAdmin
             .from('orders')
             .update({
-            status: 'paid',
+            status: 'confirmed',
             payment_status: 'paid',
             razorpay_payment_id: razorpay_payment_id
         })
@@ -167,9 +167,15 @@ const verifyPayment = async (req, res) => {
         if (orderItems && !fetchItemsError) {
             for (const item of orderItems) {
                 const vendorId = Array.isArray(item.shops) ? item.shops[0]?.vendor_id : item.shops?.vendor_id;
-                if (vendorId) {
-                    await walletService.creditVendor(vendorId, updatedOrder.id, Number(item.gross_amount), Number(item.commission), Number(item.vendor_amount));
-                }
+                // if (vendorId) {
+                //   await walletService.creditVendor(
+                //     vendorId, 
+                //     updatedOrder.id, 
+                //     Number(item.gross_amount), 
+                //     Number(item.commission), 
+                //     Number(item.vendor_amount)
+                //   );
+                // }
             }
         }
         // 5. Store the transaction details

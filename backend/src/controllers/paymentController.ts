@@ -161,7 +161,7 @@ export const verifyPayment = async (req: Request, res: Response): Promise<void> 
     const { data: updatedOrder, error: updateError } = await supabaseAdmin
       .from('orders')
       .update({
-        status: 'paid',
+        status: 'confirmed',
         payment_status: 'paid',
         razorpay_payment_id: razorpay_payment_id
       })
