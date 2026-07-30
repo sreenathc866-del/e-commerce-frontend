@@ -28,7 +28,7 @@ export default function Checkout() {
   });
   
   const [shippingMethod, setShippingMethod] = useState('standard');
-  const [paymentMethod, setPaymentMethod] = useState<'payu' | 'cod'>('payu');
+  const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'cod'>('razorpay');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showProfileCompleteModal, setShowProfileCompleteModal] = useState(false);
 
@@ -318,12 +318,8 @@ export default function Checkout() {
                     <div className="flex items-center gap-4">
                       <input type="radio" name="shipping" checked={shippingMethod === 'express'} onChange={() => setShippingMethod('express')} className="w-5 h-5 text-black focus:ring-black" />
                       <div>
-                        <div className="flex items-center gap-3">
-                        <div className="w-10 h-6 bg-green-50 rounded border border-green-200 flex items-center justify-center font-bold text-[10px] text-green-700">
-                          PAYU
-                        </div>
-                        <span className="font-medium text-gray-900">PayU Checkout</span>
-                      </div>
+                        <h4 className="font-bold">Express Delivery</h4>
+                        <p className="text-sm text-gray-500">1-2 business days</p>
                       </div>
                     </div>
                     <span className="font-bold">₹25.00</span>
