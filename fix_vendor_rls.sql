@@ -1,4 +1,5 @@
 -- RLS policies to allow vendors to view orders, customer profiles, and shipping addresses for items sold in their shop.
+-- RLS policies to allow customers to view their own order items and manage their addresses.
 -- Run this script in your Supabase SQL Editor.
 
 -- 1. Orders policies
@@ -45,5 +46,19 @@ CREATE POLICY "Vendors view customer addresses" ON public.addresses FOR SELECT U
     JOIN public.order_items oi ON o.id = oi.order_id
     JOIN public.shops s ON oi.shop_id = s.id
     WHERE o.shipping_address_id = public.addresses.id AND s.vendor_id = auth.uid()
+  )
+);
+
+DROP POLICY IF EXISTS "Customers manage own addresses" ON public.addresses;
+CREATE POLICY "Customers manage own addresses" ON public.addresses FOR ALL USING (
+  auth.uid() = user_id
+);
+
+-- 4. Order items policies (For customers to see details of what they bought)
+DROP POLICY IF EXISTS "Customers view own order items" ON public.order_items;
+CREATE POLICY "Customers view own order items" ON public.order_items FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM public.orders o
+    WHERE o.id = public.order_items.order_id AND o.customer_id = auth.uid()
   )
 );

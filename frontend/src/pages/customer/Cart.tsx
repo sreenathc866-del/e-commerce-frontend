@@ -32,12 +32,20 @@ export default function Cart() {
         <p className="text-gray-500 mb-8 text-center max-w-md">
           Looks like you haven't added anything to your cart yet. Discover our premium collection of products.
         </p>
-        <Link 
-          to="/products"
-          className="px-8 py-4 bg-black text-white dark:bg-white dark:text-black rounded-full font-bold shadow-xl hover:scale-105 active:scale-95 transition-all"
-        >
-          Start Shopping
-        </Link>
+        <div className="flex gap-4">
+          <Link 
+            to="/customer/search"
+            className="px-8 py-4 bg-black text-white dark:bg-white dark:text-black rounded-full font-bold shadow-xl hover:scale-105 active:scale-95 transition-all"
+          >
+            Start Shopping
+          </Link>
+          <Link 
+            to="/customer/orders"
+            className="px-8 py-4 bg-white text-black dark:bg-gray-800 dark:text-white border-2 border-gray-200 dark:border-gray-700 rounded-full font-bold shadow-sm hover:border-black dark:hover:border-white hover:scale-105 active:scale-95 transition-all"
+          >
+            Track Orders & Receipts
+          </Link>
+        </div>
       </div>
     );
   }

@@ -313,3 +313,5 @@ alter publication supabase_realtime add table public.inventory;
 
 -- NOTE: Storage Buckets must be created manually or via Storage API.
 -- Buckets to create: shop-logos, shop-banners, product-images, product-3d-models, invoices, review-images
+C R E A T E   P O L I C Y   " C u s t o m e r s   v i e w   o w n   o r d e r   i t e m s "   O N   p u b l i c . o r d e r _ i t e m s   F O R   S E L E C T   U S I N G   ( o r d e r _ i d   I N   ( S E L E C T   i d   F R O M   p u b l i c . o r d e r s   W H E R E   c u s t o m e r _ i d   =   a u t h . u i d ( ) ) ) ;  
+ 

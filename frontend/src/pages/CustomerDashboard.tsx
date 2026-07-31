@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, MapPin, Shield, ShoppingBag, Plus, Trash2, Edit2, CheckCircle2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 type Tab = 'profile' | 'addresses' | 'orders' | 'security';
 
@@ -57,7 +58,7 @@ export default function CustomerDashboard() {
       .select(`
         id, total_amount, status, payment_status, created_at,
         order_items (
-          id, quantity, price,
+          id, quantity, unit_price,
           products ( title )
         )
       `)
@@ -344,6 +345,15 @@ export default function CustomerDashboard() {
                               {order.status}
                             </span>
                           </div>
+                        </div>
+                        <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800 text-xs">
+                          <span className="text-gray-500 font-medium">Payment status: <span className={order.payment_status === 'paid' ? 'text-emerald-600 font-semibold' : 'text-orange-500 font-semibold'}>{order.payment_status || 'Pending'}</span></span>
+                          <Link 
+                            to={`/customer/order/${order.id}`}
+                            className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:scale-[1.02] active:scale-95 transition-all text-xs"
+                          >
+                            Track & Receipt
+                          </Link>
                         </div>
                       </div>
                     ))}

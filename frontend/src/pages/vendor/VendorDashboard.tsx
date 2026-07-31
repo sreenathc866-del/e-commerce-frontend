@@ -69,7 +69,7 @@ export default function VendorDashboard() {
           .from('shops')
           .select(`
             id, 
-            vendor_accounts ( razorpay_account_id, onboarding_status, kyc_status )
+            vendor_accounts ( payu_account_id, onboarding_status, kyc_status )
           `)
           .eq('vendor_id', user.id)
           .single();

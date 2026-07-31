@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Package, Truck, CheckCircle2, ChevronRight, Download, Search, SearchX } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/authStore';
 
@@ -16,12 +16,19 @@ interface OrderData {
 
 export default function Orders() {
   const [searchParams] = useSearchParams();
+  const { id: routeOrderId } = useParams();
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const showSuccess = searchParams.get('success') === 'true';
   const { user } = useAuthStore();
   
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (routeOrderId) {
+      setExpandedOrderId(routeOrderId);
+    }
+  }, [routeOrderId]);
 
   useEffect(() => {
     async function fetchOrders() {

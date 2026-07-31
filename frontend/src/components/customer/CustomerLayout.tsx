@@ -187,6 +187,7 @@ export default function CustomerLayout() {
     { name: 'Products', path: '/customer/search' },
     { name: 'Categories', path: '/customer/search' },
     { name: 'Shops', path: '/customer/shops' },
+    { name: 'My Orders', path: '/customer/orders' },
   ];
 
   return (
