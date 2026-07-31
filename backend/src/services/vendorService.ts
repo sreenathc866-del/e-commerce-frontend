@@ -38,6 +38,10 @@ export class VendorService {
     let delivered = 0;
 
     orderItems?.forEach((item: any) => {
+      const order = Array.isArray(item.orders) ? item.orders[0] : item.orders;
+      const status = (order?.status || '').toLowerCase();
+      if (!order || status === 'pending') return; // Skip pending/unpaid orders
+
       // Calculate revenue (vendor_amount or fallback to gross amount)
       const gross = (Number(item.quantity) || 0) * (Number(item.unit_price) || 0);
       revenue += item.vendor_amount !== null ? Number(item.vendor_amount) : gross;
@@ -45,15 +49,10 @@ export class VendorService {
 
       if (!uniqueOrders.has(item.order_id)) {
         uniqueOrders.add(item.order_id);
-        const order = Array.isArray(item.orders) ? item.orders[0] : item.orders;
-        if (order) {
-           uniqueCustomers.add(order.customer_id);
-           const status = (order.status || '').toLowerCase();
-           if (status === 'pending') pending++;
-           else if (status === 'confirmed' || status === 'packed') processing++;
-           else if (status === 'shipped') shipped++;
-           else if (status === 'delivered') delivered++;
-        }
+        uniqueCustomers.add(order.customer_id);
+        if (status === 'confirmed' || status === 'packed') processing++;
+        else if (status === 'shipped') shipped++;
+        else if (status === 'delivered') delivered++;
       }
     });
 
