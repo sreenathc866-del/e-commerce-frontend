@@ -52,6 +52,7 @@ export default function Orders() {
             const s = (order.status || 'pending').toLowerCase();
             const completedLevels = {
               'pending': 1,
+              'confirmed': 2,
               'paid': 2,
               'processing': 2,
               'shipped': 3,
@@ -256,7 +257,7 @@ export default function Orders() {
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold mt-1 uppercase ${
                           order.status === 'delivered' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' :
                           order.status === 'shipped' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
-                          order.status === 'paid' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400' :
+                          (order.status === 'paid' || order.status === 'confirmed') ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400' :
                           order.status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
                           'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
                         }`}>

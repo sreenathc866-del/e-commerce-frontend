@@ -4,11 +4,15 @@ dotenv.config({ path: 'd:\\e-commerce\\backend\\.env' });
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 async function main() {
-  const { data, error } = await supabase.from('orders').select('*').limit(1);
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(3);
   if (error) {
-    console.error('Error fetching orders:', error);
+    console.error('Error:', error);
   } else {
-    console.log('Orders columns:', Object.keys(data[0] || {}));
+    console.log(JSON.stringify(data, null, 2));
   }
 }
 main();
