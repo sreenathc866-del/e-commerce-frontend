@@ -35,7 +35,14 @@ app.use('/api', apiRoutes);
 
 // Health Check
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Backend is running' });
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'Backend is running',
+    hasSecret: !!process.env.RAZORPAY_KEY_SECRET,
+    secretLen: process.env.RAZORPAY_KEY_SECRET ? process.env.RAZORPAY_KEY_SECRET.length : 0,
+    hasKeyId: !!process.env.RAZORPAY_KEY_ID,
+    keyId: process.env.RAZORPAY_KEY_ID
+  });
 });
 
 // Error handling middleware
