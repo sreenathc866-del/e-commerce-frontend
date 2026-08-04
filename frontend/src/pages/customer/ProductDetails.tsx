@@ -20,7 +20,7 @@ export default function ProductDetails() {
   const [loading, setLoading] = useState(true);
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   
-  const { addItem: addToCart } = useCartStore();
+  const { addItem: addToCart, items: cartItems } = useCartStore();
   const { addItem: addToWishlist, items: wishlistItems } = useWishlistStore();
   const { user } = useAuthStore();
   const navigate = useNavigate();
@@ -180,11 +180,15 @@ export default function ProductDetails() {
             <div>
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center justify-between">
                 Quantity
-                <span className="text-xs font-normal text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded-md">
-                  {product.stock} in stock
+                <span className={`text-xs font-normal px-2 py-1 rounded-md ${
+                  product.stock > 0 
+                    ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30' 
+                    : 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30'
+                }`}>
+                  {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
                 </span>
               </h3>
-              <div className="inline-flex items-center bg-gray-100 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-1">
+              <div className={`inline-flex items-center bg-gray-100 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-1 ${product.stock === 0 ? 'opacity-50 pointer-events-none' : ''}`}>
                 <button 
                   onClick={() => setQuantity(q => Math.max(1, q - 1))}
                   className="p-2 text-gray-500 hover:text-black dark:hover:text-white transition-colors"
@@ -206,6 +210,12 @@ export default function ProductDetails() {
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
             <button 
               onClick={() => {
+                const isProductInCart = cartItems.some(item => item.productId === product.id);
+                if (isProductInCart) {
+                  navigate('/customer/cart');
+                  return;
+                }
+
                 if (!user) {
                   navigate(`/auth?returnUrl=${location.pathname}`);
                   return;
@@ -224,9 +234,14 @@ export default function ProductDetails() {
                   shippingCharge: product.shippingCharge
                 });
               }}
-              className="flex-1 bg-black text-white dark:bg-white dark:text-black px-8 py-4 rounded-full font-bold shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+              disabled={product.stock === 0 && !cartItems.some(item => item.productId === product.id)}
+              className={`flex-1 px-8 py-4 rounded-full font-bold transition-all flex items-center justify-center gap-2 ${
+                product.stock === 0 && !cartItems.some(item => item.productId === product.id)
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500 shadow-none'
+                  : 'bg-black text-white dark:bg-white dark:text-black shadow-xl hover:scale-[1.02] active:scale-95'
+              }`}
             >
-              <ShoppingCart className="w-5 h-5" /> Add to Cart
+              <ShoppingCart className="w-5 h-5" /> {cartItems.some(item => item.productId === product.id) ? 'Go to Cart' : product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
             </button>
             <button 
               onClick={() => {

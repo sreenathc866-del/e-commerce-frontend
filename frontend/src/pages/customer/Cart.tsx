@@ -53,6 +53,9 @@ export default function Cart() {
   const shipping = getTotalShipping();
   const grandTotal = getTotal() + shipping;
 
+  const hasOutOfStockItems = items.some(item => item.stock === 0);
+  const isCheckoutDisabled = items.length === 0 || hasOutOfStockItems;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
       <div className="flex items-center justify-between mb-8">
@@ -96,6 +99,11 @@ export default function Cart() {
                       </Link>
                       <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400 mt-1">{item.vendorName}</p>
                       {item.variant && <p className="text-sm text-gray-500 mt-1">Variant: {item.variant}</p>}
+                      {item.stock === 0 ? (
+                        <p className="text-sm font-bold text-red-500 mt-1">Out of Stock</p>
+                      ) : (
+                        <p className="text-xs font-medium text-emerald-600 mt-1">{item.stock} in stock</p>
+                      )}
                     </div>
                     <div className="text-right">
                       {item.discount ? (
@@ -180,9 +188,20 @@ export default function Cart() {
               </div>
             </div>
 
+            {hasOutOfStockItems && (
+              <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-medium rounded-xl text-center border border-red-100 dark:border-red-900/30">
+                Please remove out of stock items to proceed with checkout.
+              </div>
+            )}
+            
             <button 
-              onClick={() => navigate('/customer/checkout')}
-              className="w-full flex items-center justify-center gap-2 py-4 bg-black text-white dark:bg-white dark:text-black rounded-2xl font-bold hover:scale-[1.02] active:scale-95 transition-all shadow-xl"
+              onClick={() => !isCheckoutDisabled && navigate('/customer/checkout')}
+              disabled={isCheckoutDisabled}
+              className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold transition-all shadow-xl ${
+                isCheckoutDisabled 
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:shadow-none' 
+                  : 'bg-black text-white dark:bg-white dark:text-black hover:scale-[1.02] active:scale-95'
+              }`}
             >
               Proceed to Checkout <ArrowRight className="w-5 h-5" />
             </button>
