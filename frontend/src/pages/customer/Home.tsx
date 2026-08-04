@@ -22,7 +22,7 @@ const categories = [
 
 export default function Home() {
   const { user } = useAuthStore();
-  const [isGuest, setIsGuest] = useState(localStorage.getItem('guest_session') === 'true');
+  const [isGuest, setIsGuest] = useState(false);
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
   const [trendingProducts, setTrendingProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,6 +33,11 @@ export default function Home() {
     setIsGuest(true);
     // Notify navigation bar / layout of guest session change
     window.dispatchEvent(new Event('storage'));
+    
+    // Smooth scroll to the welcome section after it renders
+    setTimeout(() => {
+      document.getElementById('welcome-section')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   };
 
   const isLoggedIn = !!user;
@@ -285,7 +290,7 @@ export default function Home() {
       {(isLoggedIn || isGuest) && (
         <>
           {/* Welcome Banner */}
-          <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+          <section id="welcome-section" className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
             <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-orange-500 to-indigo-600 p-8 md:p-12 shadow-xl">
               <div className="absolute inset-0 bg-black/10" />
               <div className="relative z-10 max-w-2xl">

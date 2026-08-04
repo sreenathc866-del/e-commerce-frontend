@@ -44,6 +44,11 @@ export default function ProductDetails() {
           .single();
 
         if (data) {
+          const { count } = await supabase
+            .from('reviews')
+            .select('*', { count: 'exact', head: true })
+            .eq('product_id', id);
+
           setProduct({
             id: data.id,
             name: data.title,
@@ -62,7 +67,7 @@ export default function ProductDetails() {
             price: Number(data.price),
             compareAtPrice: data.compare_at_price ? Number(data.compare_at_price) : undefined,
             rating: Number(data.rating) || 0,
-            reviews: Math.floor(Math.random() * 150),
+            reviews: count || 0,
             description: data.description || 'No description available.',
             stock: Array.isArray(data.inventory) 
               ? (data.inventory as any)[0]?.stock_quantity || 0 
