@@ -20,6 +20,7 @@ import Checkout from './pages/customer/Checkout';
 import Orders from './pages/customer/Orders';
 import VendorOrders from './pages/vendor/VendorOrders';
 import VendorWallet from './pages/vendor/VendorWallet';
+import VendorSettings from './pages/vendor/VendorSettings';
 import Unauthorized from './pages/Unauthorized';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuthStore } from './store/authStore';
@@ -134,6 +135,7 @@ function App() {
               <Route path="new" element={<AddProduct />} />
               <Route path="edit/:id" element={<AddProduct />} />
             </Route>
+            <Route path="settings" element={<VendorSettings />} />
             {/* Future nested routes will go here: analytics, etc. */}
             <Route path="*" element={<div className="p-8">Page under construction</div>} />
           </Route>
