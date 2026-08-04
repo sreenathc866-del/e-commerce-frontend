@@ -34,7 +34,7 @@ export default function ProductDetails() {
         const { data, error } = await supabase
           .from('products')
           .select(`
-            id, title, description, price, rating,
+            id, title, description, price, compare_at_price, rating,
             shops ( id, name, shipping_charge, tax_percentage ),
             product_images ( image_url ),
             product_3d_models ( model_url ),
@@ -60,6 +60,7 @@ export default function ProductDetails() {
               ? (data.shops as any)[0]?.tax_percentage || 0
               : (data.shops as any)?.tax_percentage || 0,
             price: Number(data.price),
+            compareAtPrice: data.compare_at_price ? Number(data.compare_at_price) : undefined,
             rating: Number(data.rating) || 0,
             reviews: Math.floor(Math.random() * 150),
             description: data.description || 'No description available.',
@@ -147,8 +148,20 @@ export default function ProductDetails() {
             {product.name}
           </h1>
 
-          <div className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-            ₹{product.price.toFixed(2)}
+          <div className="flex items-center gap-4 mb-6">
+            <div className="text-3xl font-bold text-gray-900 dark:text-white">
+              ₹{product.price.toFixed(2)}
+            </div>
+            {product.compareAtPrice && product.compareAtPrice > product.price && (
+              <>
+                <div className="text-xl text-gray-400 line-through">
+                  ₹{product.compareAtPrice.toFixed(2)}
+                </div>
+                <div className="bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded-lg font-bold text-sm">
+                  -{Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)}% OFF
+                </div>
+              </>
+            )}
           </div>
 
           <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-8">

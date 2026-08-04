@@ -102,6 +102,7 @@ export default function Home() {
           rating: Number(p.rating) || 0,
           reviews: Math.floor(Math.random() * 100), // mock reviews for now
           status: 'In Stock' as const,
+          compareAtPrice: p.compare_at_price ? Number(p.compare_at_price) : undefined,
           discount: p.compare_at_price > p.price ? Math.round(((p.compare_at_price - p.price) / p.compare_at_price) * 100) : undefined
         })));
       }
@@ -128,6 +129,7 @@ export default function Home() {
           rating: Number(p.rating) || 0,
           reviews: Math.floor(Math.random() * 200),
           status: 'In Stock' as const,
+          compareAtPrice: p.compare_at_price ? Number(p.compare_at_price) : undefined,
           discount: p.compare_at_price > p.price ? Math.round(((p.compare_at_price - p.price) / p.compare_at_price) * 100) : undefined
         })));
       }

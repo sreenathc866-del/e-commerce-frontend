@@ -15,9 +15,10 @@ export interface ProductCardProps {
   reviews: number;
   status: 'In Stock' | 'Low Stock' | 'Out of Stock';
   discount?: number;
+  compareAtPrice?: number;
 }
 
-export default function ProductCard({ id, name, vendorName, price, image, rating, reviews, status, discount }: ProductCardProps) {
+export default function ProductCard({ id, name, vendorName, price, image, rating, reviews, status, discount, compareAtPrice }: ProductCardProps) {
   const { user } = useAuthStore();
   const { addItem } = useCartStore();
   const navigate = useNavigate();
@@ -86,10 +87,10 @@ export default function ProductCard({ id, name, vendorName, price, image, rating
         
         <div className="mt-auto flex items-center justify-between pt-3">
           <div className="flex flex-col">
-            {discount ? (
+            {compareAtPrice && compareAtPrice > price ? (
               <>
-                <span className="text-xs text-gray-400 line-through">₹{price.toFixed(2)}</span>
-                <span className="font-bold text-lg text-gray-900 dark:text-white">₹{(price - (price * (discount/100))).toFixed(2)}</span>
+                <span className="text-xs text-gray-400 line-through">₹{compareAtPrice.toFixed(2)}</span>
+                <span className="font-bold text-lg text-gray-900 dark:text-white">₹{price.toFixed(2)}</span>
               </>
             ) : (
               <span className="font-bold text-lg text-gray-900 dark:text-white">₹{price.toFixed(2)}</span>
@@ -108,7 +109,7 @@ export default function ProductCard({ id, name, vendorName, price, image, rating
                 name,
                 vendorName,
                 image,
-                price: discount ? price - (price * (discount/100)) : price,
+                price: price,
                 quantity: 1,
                 stock: 10,
                 variant: 'Default'

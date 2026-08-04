@@ -59,6 +59,7 @@ export default function ShopDetails() {
           rating: Number(p.rating) || 0,
           reviews: 0,
           status: 'In Stock' as const,
+          compareAtPrice: p.compare_at_price ? Number(p.compare_at_price) : undefined,
           discount: p.compare_at_price > p.price ? Math.round(((p.compare_at_price - p.price) / p.compare_at_price) * 100) : undefined
         })));
       }
