@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import ProductCard from '../../components/customer/ProductCard';
 import { supabase } from '../../lib/supabase';
+import { toast } from 'sonner';
 
 export default function ShopDetails() {
   const { id } = useParams();
@@ -104,11 +105,15 @@ export default function ShopDetails() {
               </div>
 
               <div className="flex gap-3">
-                <button className="px-5 py-2.5 border-2 border-gray-200 dark:border-gray-800 rounded-xl font-bold hover:border-black dark:hover:border-white transition-colors flex items-center justify-center">
-                  Follow
-                </button>
-                <button className="px-3 py-2.5 border-2 border-gray-200 dark:border-gray-800 rounded-xl font-bold hover:border-black dark:hover:border-white transition-colors flex items-center justify-center">
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.href);
+                    toast.success('Shop link copied to clipboard!');
+                  }}
+                  className="px-4 py-2.5 border-2 border-gray-200 dark:border-gray-800 rounded-xl font-bold hover:border-black dark:hover:border-white transition-colors flex items-center justify-center gap-2"
+                >
                   <Share2 className="w-5 h-5" />
+                  <span className="hidden sm:inline">Share Shop</span>
                 </button>
               </div>
             </div>
