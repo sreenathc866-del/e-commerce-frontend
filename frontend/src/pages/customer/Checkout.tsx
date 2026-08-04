@@ -144,7 +144,7 @@ export default function Checkout() {
       const addressId = await getOrCreateAddress();
 
       // 2. Create order on Backend
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/payments/create-order`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL.endsWith('/api') ? import.meta.env.VITE_API_URL : import.meta.env.VITE_API_URL + '/api'}/payments/create-order`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -177,7 +177,7 @@ export default function Checkout() {
         order_id: orderData.id,
         handler: async function (response: any) {
           try {
-            const verifyRes = await fetch(`${import.meta.env.VITE_API_URL}/payments/verify-payment`, {
+            const verifyRes = await fetch(`${import.meta.env.VITE_API_URL.endsWith('/api') ? import.meta.env.VITE_API_URL : import.meta.env.VITE_API_URL + '/api'}/payments/verify-payment`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',

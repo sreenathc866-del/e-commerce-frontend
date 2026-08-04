@@ -31,19 +31,19 @@ export default function VendorWallet() {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       // Fetch wallet
-      const walletRes = await fetch(`${import.meta.env.VITE_API_URL}/wallet`, { headers });
+      const walletRes = await fetch(`${import.meta.env.VITE_API_URL.endsWith('/api') ? import.meta.env.VITE_API_URL : import.meta.env.VITE_API_URL + '/api'}/wallet`, { headers });
       if (walletRes.ok) setWallet(await walletRes.json());
 
       // Fetch history
-      const historyRes = await fetch(`${import.meta.env.VITE_API_URL}/wallet/history`, { headers });
+      const historyRes = await fetch(`${import.meta.env.VITE_API_URL.endsWith('/api') ? import.meta.env.VITE_API_URL : import.meta.env.VITE_API_URL + '/api'}/wallet/history`, { headers });
       if (historyRes.ok) setHistory(await historyRes.json());
 
       // Fetch withdrawals
-      const withdrawRes = await fetch(`${import.meta.env.VITE_API_URL}/withdrawals`, { headers });
+      const withdrawRes = await fetch(`${import.meta.env.VITE_API_URL.endsWith('/api') ? import.meta.env.VITE_API_URL : import.meta.env.VITE_API_URL + '/api'}/withdrawals`, { headers });
       if (withdrawRes.ok) setWithdrawals(await withdrawRes.json());
 
       // Fetch banks
-      const bankRes = await fetch(`${import.meta.env.VITE_API_URL}/withdrawals/banks`, { headers });
+      const bankRes = await fetch(`${import.meta.env.VITE_API_URL.endsWith('/api') ? import.meta.env.VITE_API_URL : import.meta.env.VITE_API_URL + '/api'}/withdrawals/banks`, { headers });
       if (bankRes.ok) setBankAccounts(await bankRes.json());
 
     } catch (error) {
@@ -58,7 +58,7 @@ export default function VendorWallet() {
 
     try {
       const { data: session } = await supabase.auth.getSession();
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/withdrawals`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL.endsWith('/api') ? import.meta.env.VITE_API_URL : import.meta.env.VITE_API_URL + '/api'}/withdrawals`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -81,7 +81,7 @@ export default function VendorWallet() {
     e.preventDefault();
     try {
       const { data: session } = await supabase.auth.getSession();
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/withdrawals/banks`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL.endsWith('/api') ? import.meta.env.VITE_API_URL : import.meta.env.VITE_API_URL + '/api'}/withdrawals/banks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -21,7 +21,7 @@ export default function AdminDashboard() {
     async function fetchStats() {
       try {
         const { data: sessionData } = await supabase.auth.getSession();
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/transactions`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL.endsWith('/api') ? import.meta.env.VITE_API_URL : import.meta.env.VITE_API_URL + '/api'}/admin/transactions`, {
           headers: {
             'Authorization': `Bearer ${sessionData.session?.access_token}`
           }

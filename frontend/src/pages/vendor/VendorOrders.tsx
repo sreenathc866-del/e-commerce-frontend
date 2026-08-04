@@ -133,7 +133,7 @@ export default function VendorOrders() {
 
     try {
       const { data: sessionData } = await supabase.auth.getSession();
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/refunds/create`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL.endsWith('/api') ? import.meta.env.VITE_API_URL : import.meta.env.VITE_API_URL + '/api'}/refunds/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -128,7 +128,7 @@ export default function VendorDashboard() {
         let productsCount = 0;
 
         try {
-          const res = await fetch(`${import.meta.env.VITE_API_URL}/vendor/balance`, {
+          const res = await fetch(`${import.meta.env.VITE_API_URL.endsWith('/api') ? import.meta.env.VITE_API_URL : import.meta.env.VITE_API_URL + '/api'}/vendor/balance`, {
             headers: {
               'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
             }

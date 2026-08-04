@@ -18,7 +18,7 @@ export default function AdminWithdrawals() {
   const fetchWithdrawals = async () => {
     try {
       const { data: session } = await supabase.auth.getSession();
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/withdrawals`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL.endsWith('/api') ? import.meta.env.VITE_API_URL : import.meta.env.VITE_API_URL + '/api'}/admin/withdrawals`, {
         headers: { 'Authorization': `Bearer ${session.session?.access_token}` }
       });
       if (!res.ok) throw new Error('Failed to fetch withdrawals');
@@ -33,7 +33,7 @@ export default function AdminWithdrawals() {
   const updateStatus = async (id: string, status: string) => {
     try {
       const { data: session } = await supabase.auth.getSession();
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/withdrawals/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL.endsWith('/api') ? import.meta.env.VITE_API_URL : import.meta.env.VITE_API_URL + '/api'}/admin/withdrawals/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
